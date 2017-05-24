@@ -191,7 +191,8 @@
                 (= token ")") (handle-close-brack variable-lookup-map s)
                 :else (raise)
                 )))
-    (.pop s)))
+    (let [result (.pop s)]
+      (if (not-emp s) (raise) result))))
 
 
 (defn eval-program
