@@ -104,9 +104,7 @@
     (doseq [token source]
       (cond
         (= token "(") (do (.append sb (str token " ")) (.push stack token))
-        (or (xsymbol? token)
-            (xnumber? token)
-            (variable? token)) (.append sb (str token " "))
+        (or (xsymbol? token) (xnumber? token) (variable? token)) (.append sb (str token " "))
         (= token ")") (do (.append sb (str token " ")) (pop-till-balanced stack))
         :else (raise))
       (if (.isEmpty stack)
@@ -117,13 +115,11 @@
       (if (not (xnumber? (.peek stack)))
         (raise)
         (.add result (.pop stack)))
-      result)))
+      (vec result))))
 
 
 (defn handle-number [stack number]
-  (if (and (not-emp stack)
-           (or (= (.peek stack) "(")
-               (= (.peek stack) ")")))
+  (if (and (not-emp stack) (or (= (.peek stack) "(") (= (.peek stack) ")")))
     (raise)
     (if (.isEmpty stack)
       (raise)
