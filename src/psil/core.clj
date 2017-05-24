@@ -18,7 +18,15 @@
   (apply * args))
 
 
-(def symbol-map {"+" +-fn "*" *-fn "bind" bind-fn})
+(defn --fn [_ args]
+  (apply - args))
+
+
+(defn div-fn [_ args]
+  (apply / args))
+
+
+(def symbol-map {"+" +-fn "*" *-fn "-" --fn "/" div-fn "bind" bind-fn})
 
 
 (defn xsymbol?
