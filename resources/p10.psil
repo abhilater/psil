@@ -1,0 +1,4 @@
+(bind a 10)
+(bind b a)
+(bind a 11)
+(+ a b)
