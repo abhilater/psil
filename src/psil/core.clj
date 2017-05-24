@@ -75,15 +75,15 @@
   (filter (comp not empty?) (s/split (s/replace (s/replace src #"\(" " ( ") #"\)" " ) ") #"\s+")))
 
 
-(defn parse-file
-  "Parses input filename to produce tokenized code sequence
+(defn parse-raw-source
+  "Parses input source to produce tokenized code sequence
   (parse-file \"p7.psil\")
   => (\"(\" \"bind\" \"length\" \"10\" \")\" \"(\" \"bind\" \"breadth\" \"10\" \")\" \"(\" \"*\" \"length\" \"breadth\" \")\")\n
   "
-  [file]
-  (let [prog-str (slurp (io/resource file))]
-    (->> (strip-line-breaks-tabs prog-str)
-         tokenize-source)))
+  [raw-source]
+  (->> raw-source
+       strip-line-breaks-tabs
+       tokenize-source))
 
 
 (defn parse-source
@@ -213,7 +213,15 @@
 
 (defn run [file]
   (->> file
-       parse-file
+       io/resource
+       slurp
+       parse-raw-source
+       parse-source
+       (eval-program (get-lookup-table))))
+
+(defn run-src [source-str]
+  (->> source-str
+       parse-raw-source
        parse-source
        (eval-program (get-lookup-table))))
 
@@ -221,3 +229,157 @@
   "I don't do a whole lot ... yet."
   [& args]
   (run (first args)))
+
+
+(comment
+  (->> "123"
+       run-src)
+  ;=> 123
+
+  (->>
+    "(+)"
+    run-src)
+  ;=> 0
+
+  (->>
+    "(*)"
+    run-src)
+  ;=> 1
+
+  (->>
+    "(+ 1)"
+    run-src)
+  ;=> 1
+
+  (->>
+    "(* 1)"
+    run-src)
+  ;=> 1
+
+  (->>
+    "(* 1 1 1 1 2)"
+    run-src)
+  ;=> 2
+  (->>
+    "(* 2 (+ 1 2 3) 3)"
+    run-src)
+  ;=> 36
+
+  (->>
+    "(* 2 (+ 1 ) 3)"
+    run-src)
+  ;=> 6
+
+  (->>
+    "(* 2 (+ 1 2) (* 2 (* 2 (* 2 (* 2 2)))))"
+    run-src)
+  ;=> 192
+
+  (->>
+    "(* 2 (+ 1 2) (* 2 (* 2 (* 2 (* 2 2)))))"
+    run-src)
+  ;=> 192
+
+  (->>
+    "(bind a (* 2 (+ 1 2) (* 2 (* 2 (* 2 (* 2 2))))))"
+    run-src)
+  ;=> 192
+
+  (->>
+    "(bind a (* 2 (+ 1 2) (* 2 (* 2 (* 2 (* 2 2)))))) (+ 8 a)"
+    run-src)
+  ;=> 200
+
+  (->>
+    "(bind a 1) (bind b 2) (+ 7 a b)"
+    run-src)
+  ;=> 10
+
+  (->>
+    "(+ 1\n    (* 2 3)\n    (* 4 2))"
+    run-src)
+  ;=> 15
+
+  (->>
+    "(bind radius 12)"
+    run-src)
+  ;=> 12
+
+  (->>
+    "(bind length 10)\n(bind breadth 10)\n(* length breadth)"
+    run-src)
+  ;=> 100
+
+  (->>
+    "(bind length 10) (+ 1 2 3 4) (bind breadth 10)\n(* length breadth)"
+    run-src)
+  ;=> 100
+
+  (->>
+    "(bind length 10)\n(bind breadth (+ length 1))\n(bind length 11)\n(* length breadth)"
+    run-src)
+  ;=> 121
+
+  (->>
+    "(bind a 10)\n(bind b a)\n(bind a 11)\n(+ a b)"
+    run-src)
+  ;=> 21
+
+  (->>
+    "(bind a 1) (bind b 2) (+ c a b)"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "(bind a a) (bind b 2) (+ c a b)"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "(bind a a) (bind b 2) (+ 1)"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "()"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "(1)"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "a"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "( a +"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "( 1 + )"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "(1 2 3 4 5)"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "(+ 1) 2)"
+    run-src)
+  ;=> Invalid Program
+
+  (->>
+    "(+ (* 1 2) + (* 3 4))"
+    run-src)
+  ;=> Invalid Program
+
+
+
+  )
