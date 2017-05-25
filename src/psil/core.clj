@@ -29,37 +29,19 @@
 (def symbol-map {"+" +-fn "*" *-fn "-" --fn "/" div-fn "bind" bind-fn})
 
 
-(defn xsymbol?
-  "(xsymbol? \"+\")
-  => true
-  (xsymbol? \"bind\")
-  => true"
-  [s]
+(defn xsymbol? [s]
   (contains?
     (set (keys symbol-map)) s))
 
-(defn to-number
-  "(xnumber? \"123\")
-  => true
-  (xnumber? \"12a3\")
-  => false
-  (xnumber? \"-1\")
-  => false"
-  [s]
+
+(defn to-number [s]
   (try (if (.contains s ".")
          (Double/parseDouble s)
          (Long/parseLong s))
        (catch NumberFormatException nfe false)))
 
 
-(defn variable?
-  "(variable? \"a2a\")
-  => false
-  (variable? \"aa\")
-  => true
-  (variable? \"a_a\")
-  => false"
-  [s]
+(defn variable? [s]
   (->> s
        (every? #(or (and (>= (int %) 65) (<= (int %) 90))
                     (and (>= (int %) 97) (<= (int %) 122))))))
