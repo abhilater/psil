@@ -59,9 +59,8 @@
   => false"
   [s]
   (->> s
-       (every? #(or
-                  (and (>= (int %) 65) (<= (int %) 90))
-                  (and (>= (int %) 97) (<= (int %) 122))))))
+       (every? #(or (and (>= (int %) 65) (<= (int %) 90))
+                    (and (>= (int %) 97) (<= (int %) 122))))))
 
 (defn raise []
   (throw (RuntimeException. "Invalid Program")))
@@ -193,8 +192,7 @@
                 (xnumber? token) (handle-number s token)
                 (variable? token) (handle-var variable-lookup-map s token)
                 (= token ")") (handle-close-brack variable-lookup-map s)
-                :else (raise)
-                )))
+                :else (raise))))
     (let [result (.pop s)]
       (if (not-emp s) (raise) result))))
 
