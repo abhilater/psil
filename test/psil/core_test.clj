@@ -58,7 +58,11 @@
     (is (thrown? RuntimeException (run-src "(+ 1) 2)")))
     (is (thrown? RuntimeException (run-src "(+ (* 1 2) + (* 3 4))")))
 
-
+    ;; negative and fractional
+    (is (thrown? RuntimeException (run-src "(+ -1 1")))
+    (is (thrown? RuntimeException (run-src "(+ 1.2 1")))
+    (is (thrown? RuntimeException (run-src "(+ 1/3 1")))
+    (is (thrown? RuntimeException (run-src "(bind a 1/2")))
 
 
     ))
