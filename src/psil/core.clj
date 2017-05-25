@@ -38,7 +38,7 @@
   (contains?
     (set (keys symbol-map)) s))
 
-(defn xnumber?
+(defn to-number
   "(xnumber? \"123\")
   => true
   (xnumber? \"12a3\")
@@ -46,7 +46,9 @@
   (xnumber? \"-1\")
   => false"
   [s]
-  (try (>= (Integer/parseInt s) 0)
+  (try (if (.contains s ".")
+         (Double/parseDouble s)
+         (Long/parseLong s))
        (catch NumberFormatException nfe false)))
 
 
@@ -111,7 +113,7 @@
     (doseq [token source]
       (cond
         (= token "(") (do (.append sb (str token " ")) (.push stack token))
-        (or (xsymbol? token) (xnumber? token) (variable? token)) (.append sb (str token " "))
+        (or (xsymbol? token) (to-number token) (variable? token)) (.append sb (str token " "))
         (= token ")") (do (.append sb (str token " ")) (pop-till-balanced stack))
         :else (raise))
       (if (.isEmpty stack)
@@ -119,7 +121,7 @@
             (.setLength sb 0))))
 
     (if (not-emp stack)
-      (if (not (xnumber? (.peek stack)))
+      (if (not (to-number (.peek stack)))
         (raise)
         (.add result (.pop stack)))
       (vec result))))
@@ -130,7 +132,7 @@
     (raise)
     (if (.isEmpty stack)
       (raise)
-      (.push stack (Integer/parseInt number)))))
+      (.push stack (to-number number)))))
 
 
 (defn handle-symb [stack symb]
@@ -182,14 +184,14 @@
         cnt (count tokens)]
     (cond
       (< cnt 1) (raise)
-      (= cnt 1) (if (xnumber? (first tokens))
-                  (.push s (Integer/parseInt (first tokens)))
+      (= cnt 1) (if (to-number (first tokens))
+                  (.push s (to-number (first tokens)))
                   (raise))
       :else (doseq [token tokens]
               (cond
                 (= token "(") (.push s token)
                 (xsymbol? token) (handle-symb s token)
-                (xnumber? token) (handle-number s token)
+                (to-number token) (handle-number s token)
                 (variable? token) (handle-var variable-lookup-map s token)
                 (= token ")") (handle-close-brack variable-lookup-map s)
                 :else (raise))))

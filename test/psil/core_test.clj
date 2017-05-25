@@ -59,10 +59,17 @@
     (is (thrown? RuntimeException (run-src "(+ (* 1 2) + (* 3 4))")))
 
     ;; negative and fractional
-    (is (thrown? RuntimeException (run-src "(+ -1 1")))
-    (is (thrown? RuntimeException (run-src "(+ 1.2 1")))
-    (is (thrown? RuntimeException (run-src "(+ 1/3 1")))
-    (is (thrown? RuntimeException (run-src "(bind a 1/2")))
+    (is (= -1 (run-src "(- 1)")))
+    (is (= 0 (run-src "(+ -1 1)")))
+    (is (= 2.2 (run-src "(+ 1.2 1)")))
+    (is (= 1.3 (run-src "(* 1.3 1)")))
+    (is (= 1.2 (run-src "(bind a 1.2)")))
+    (is (= 1 (run-src "(* -1 -1)")))
+    (is (= -3.5999999999999996 (run-src "(* -3 1.2)")))
+    (is (= -5.0 (run-src "(bind a -1.5)\n(bind b 2)\n(bind a -2.5)\n(* a b)")))
 
+    ;; invalid
+    (is (thrown? RuntimeException (run-src "(- 1..2)")))
+    (is (thrown? RuntimeException (run-src "(- 2.4.)")))
 
     ))
